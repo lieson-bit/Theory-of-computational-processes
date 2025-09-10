@@ -1,86 +1,190 @@
-from collections import defaultdict
-
 class TuringMachine:
-    def __init__(self, transitions, start_state, halt_state, blank='λ'):
-        # transitions: dict[(state, sym)] = (next_state, write_sym, move) where move in {'L','R','E'}
-        self.delta = transitions
-        self.q = start_state
-        self.halt = halt_state
-        self.blank = blank
-        self.tape = defaultdict(lambda: blank)
+    def __init__(self, input_tape):
+        self.tape = list(input_tape)
         self.head = 0
-
-    def load(self, s):
-        self.tape = defaultdict(lambda: self.blank)
-        for i, ch in enumerate(s):
-            self.tape[i] = ch
-        self.head = 0
-
-    def step(self):
-        if self.q == self.halt:
-            return False
-        sym = self.tape[self.head]
-        if (self.q, sym) not in self.delta:
-            # no rule → stuck (non-halting); for lab semantics, that’s “undefined”
-            return False
-        nq, ws, mv = self.delta[(self.q, sym)]
-        self.tape[self.head] = ws
-        if mv == 'L':
-            self.head -= 1
-        elif mv == 'R':
-            self.head += 1
-        # 'E' = no move
-        self.q = nq
-        return True
-
-    def run(self, max_steps=100000):
-        steps = 0
-        while steps < max_steps and self.q != self.halt and self.step():
-            steps += 1
-        return steps
-
-    def snapshot(self, window=60):
-        # show a window around the non-blank region
-        keys = [k for k,v in self.tape.items() if v != self.blank]
-        if not keys:
-            lo = hi = 0
+        self.state = 'q0'
+        self.steps = 0
+        
+    def _get_current_symbol(self):
+        if self.head < 0 or self.head >= len(self.tape):
+            return 'B'
+        return self.tape[self.head]
+    
+    def _set_current_symbol(self, symbol):
+        if self.head < 0:
+            self.tape = [symbol] + ['B'] * (-self.head - 1) + self.tape
+            self.head = 0
+        elif self.head >= len(self.tape):
+            self.tape = self.tape + ['B'] * (self.head - len(self.tape)) + [symbol]
         else:
-            lo, hi = min(keys)-2, max(keys)+3
-        s = []
-        for i in range(lo, hi):
-            ch = self.tape[i]
-            if i == self.head:
-                s.append(f"[{self.q}:{ch}]")
+            self.tape[self.head] = symbol
+    
+    def _move(self, direction):
+        if direction == 'R':
+            self.head += 1
+        elif direction == 'L':
+            self.head -= 1
+        elif direction != 'S':
+            raise ValueError(f"Invalid direction: {direction}")
+    
+    def _print_state(self):
+        tape_str = ''.join(self.tape)
+        head_pos = ' ' * self.head + '^'
+        print(f"Step {self.steps:3d}: State={self.state:2s} | Tape: {tape_str}")
+        print(f"           {' ' * 12} {head_pos}")
+    
+    def run(self, max_steps=500, verbose=True):
+        if verbose:
+            print("Initial state:")
+            self._print_state()
+            print("\n" + "="*50)
+
+        # CORRECTED TRANSITION RULES
+        transitions = {
+            # Start state - find first 1 to mark
+            ('q0', '1'): ('X', 'R', 'q1'),
+            ('q0', '*'): ('*', 'R', 'q9'),
+            ('q9', '1'): ('y', 'R', 'q9'),
+            ('q9', '='): ('=', 'S', 'halt'),
+
+            # After marking left 1, go to right side
+            ('q1', '1'): ('1', 'R', 'q1'),
+            ('q1', '*'): ('*', 'R', 'q2'),
+
+            # Find first 1 on right side to copy
+            ('q2', '1'): ('Y', 'R', 'q3'),
+            ('q2', 'Y'): ('Y', 'R', 'q2'),
+            ('q2', '='): ('=', 'L', 'q7'),
+
+            # Go to end of tape to add new 1
+            ('q3', '1'): ('1', 'R', 'q3'),
+            ('q3', '='): ('=', 'R', 'q4'),
+            ('q4', '_'): ('1', 'L', 'q5'),
+            ('q4', '1'): ('1', 'R', 'q4'),
+
+            # Return to right side
+            ('q5', '1'): ('1', 'L', 'q5'),
+            ('q5', '='): ('=', 'L', 'q6'),
+            ('q6', '1'): ('1', 'L', 'q6'),
+            ('q6', 'Y'): ('Y', 'L', 'q6'),
+            ('q6', '*'): ('*', 'R', 'q2'),
+
+            # All right 1s processed, return to left - RESET Y's to 1's
+            ('q7', 'Y'): ('1', 'L', 'q7'),  # Reset Y to 1
+            ('q7', '1'): ('1', 'L', 'q7'),
+            ('q7', '*'): ('*', 'L', 'q8'),
+
+            # Cleanup - all left 1s processed
+            ('q8', '1'): ('1', 'L', 'q8'),
+            ('q8', 'X'): ('X', 'R', 'q0'),  # ADDED: Clean up any remaining Y's
+            
+        }
+
+        while self.state != 'halt' and self.steps < max_steps:
+            current_symbol = self._get_current_symbol()
+            key = (self.state, current_symbol)
+
+            if key not in transitions:
+                if verbose:
+                    print(f"\nNo transition defined for (state={self.state}, symbol={current_symbol})")
+                    print("Current tape:", ''.join(self.tape))
+                break
+            
+            write_symbol, move_direction, next_state = transitions[key]
+
+            self._set_current_symbol(write_symbol)
+            self._move(move_direction)
+            self.state = next_state
+            self.steps += 1
+
+            if verbose and self.steps <= 100:
+                self._print_state()
+
+        if verbose:
+            print("\n" + "="*50)
+            if self.state == 'halt':
+                print("Computation completed successfully!")
             else:
-                s.append(ch)
-        return ''.join(s)
+                print(f"Computation stopped after {self.steps} steps")
 
-# Build the example machine
-rules = [
-    ('q0','1','q1','λ','R'),
-    ('q1','1','q1','1','R'),
-    ('q1','*','q2','*','R'),
-    ('q2','1','q3','0','R'),
-    ('q3','1','q3','1','R'),
-    ('q3','=', 'q3','=', 'R'),
-    ('q3','λ','q4','1','L'),
-    ('q4','1','q4','1','L'),
-    ('q4','0','q2','0','R'),
-    ('q4','=', 'q5','=', 'L'),
-    ('q5','1','q5','1','L'),
-    ('q5','0','q5','1','L'),
-    ('q5','*','q6','*','L'),
-    ('q6','1','q7','1','L'),
-    ('q6','λ','qz','λ','R'),
-    ('q7','1','q7','1','L'),
-    ('q7','λ','q0','λ','R'),
-]
-delta = { (q,a):(nq,ws,mv) for q,a,nq,ws,mv in rules }
+            result = ''.join([c for c in self.tape if c == '1'])
+            print(f"Final result: {len(result)} ones -> {result}")
 
-tm = TuringMachine(delta, start_state='q0', halt_state='qz', blank='λ')
-tm.load("11*111=")  # input: a=2, b=3
-tm.run()
-# Read out the tape (strip blanks)
-out_cells = [tm.tape[i] for i in range(-50, 200)]
-output = ''.join(ch for ch in out_cells if ch != 'λ')
-print("Output tape:", output)  # Expect something like "*11111=" or "11111=" depending on where you start reading
+        return self.tape, self.state
+
+def create_input_string(a, b):
+    """Create input string in the format '111*111=' for given numbers"""
+    left_ones = '1' * a
+    right_ones = '1' * b
+    return f"{left_ones}*{right_ones}=______________"
+
+def test_multiplication():
+    """Test the multiplication Turing machine"""
+    test_cases = [
+        (1, 1),  # 1 × 1 = 1
+        (2, 1),  # 2 × 1 = 2
+        (1, 2),  # 1 × 2 = 2
+        (2, 2),  # 2 × 2 = 4
+        (2, 3),  # 2 × 3 = 6
+        (3, 2),  # 3 × 2 = 6
+    ]
+    
+    print("Testing Multiplication Turing Machine")
+    print("=" * 40)
+    
+    for a, b in test_cases:
+        input_str = create_input_string(a, b)
+        expected = a * b
+        
+        print(f"\nTesting {a} × {b} = {expected}")
+        print(f"Input: {input_str}")
+        
+        tm = TuringMachine(input_str)
+        final_tape, final_state = tm.run(verbose=False, max_steps=500)
+        
+        result_ones = ''.join([c for c in final_tape if c == '1'])
+        
+        print(f"Expected: {expected} ones")
+        print(f"Got:      {len(result_ones)} ones")
+        
+        if len(result_ones) == expected:
+            print("✓ SUCCESS!")
+        else:
+            print("✗ FAILED!")
+            print(f"Final tape: {''.join(final_tape)}")
+        
+        print("-" * 40)
+
+def debug_case(a, b):
+    """Debug a specific case with verbose output"""
+    print(f"\nDEBUGGING {a} × {b}:")
+    print("=" * 30)
+    
+    input_str = create_input_string(a, b)
+    expected = a * b
+        
+    print(f"Input: {input_str}")
+    print(f"Expected: {expected} ones")
+    
+    tm = TuringMachine(input_str)
+    final_tape, final_state = tm.run(verbose=True, max_steps=200)
+    
+    result_ones = ''.join([c for c in final_tape if c == '1'])
+    
+    print(f"\nExpected: {expected} ones, Got: {len(result_ones)} ones")
+    if len(result_ones) == expected:
+        print("✓ SUCCESS!")
+    else:
+        print("✗ FAILED!")
+        print(f"Final tape: {''.join(final_tape)}")
+
+if __name__ == "__main__":
+    # Run comprehensive tests
+    test_multiplication()
+    
+    # Debug specific cases that are failing
+    print("\n" + "="*60)
+  
+    
+    debug_case(2, 1)
+    debug_case(2, 2)
