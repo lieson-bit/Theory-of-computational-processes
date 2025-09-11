@@ -38,7 +38,4 @@ It includes:
 3. **Algo200 Visualization**  
    ![Lab 2 Algo200](./gif-files/algo200-MT-lab2.gif)
 
----
-
-
 
