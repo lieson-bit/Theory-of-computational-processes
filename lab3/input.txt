@@ -1,0 +1,10 @@
+A = {1, *, =, /};
+X = {a, b, c};
+A1 = {a*b=/=};
+INPUT = {a=111, b=111};
+R = {
+a*1b=/c= -> a*b=/ca=,
+a*=/c= -> c
+};
+
+& C:/Users/1/anaconda3/python.exe e:/Theory-of-computational-processes/lab3/post_simulator.py input.txt
