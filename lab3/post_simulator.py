@@ -141,36 +141,17 @@ def main():
         # Parse input file
         A, X, A1, R, INPUT = parse_input_file(sys.argv[1])
 
-        print(f"Alphabet A: {A}")
-        print(f"Variables X: {X}")
-        print(f"Axioms A1: {A1}")
-        print(f"Rules R: {R}")
-        if INPUT:
-            print(f"Input values: {INPUT}")
-        print()
-
-        # Validate we have exactly one axiom
         if not A1:
             print("Error: No axioms found")
             return
-        if len(A1) > 1:
-            print("Warning: Multiple axioms found, using first one")
-
         axiom_template = next(iter(A1))
-
-        # Substitute variables if INPUT section exists
-        if INPUT:
-            current_string = substitute_variables(axiom_template, INPUT)
-            print(f"Starting computation with substituted values: {current_string}")
-        else:
-            current_string = axiom_template
-            print(f"Starting computation with axiom: {current_string}")
-            print("Warning: No INPUT section found. Using axiom as-is.")
+        current_string = substitute_variables(axiom_template, INPUT) if INPUT else axiom_template
 
         step = 0
         max_steps = 1000
-
         output_filename = "output.txt"
+        final_result = ""  # Store last seen /…= value
+
         with open(output_filename, "w", encoding='utf-8') as output_file:
             output_file.write(f"Initial string: {current_string}\n\n")
 
@@ -178,37 +159,30 @@ def main():
                 rule_applied = False
 
                 for rule in R:
-                    try:
-                        new_string, substitutions = apply_rule(current_string, rule, A, X)
+                    new_string, substitutions = apply_rule(current_string, rule, A, X)
 
-                        if substitutions is not None:  # Rule was applied
-                            # Write step results
-                            output_file.write(f"Step {step + 1}:\n")
-                            output_file.write(f"Original string: {current_string}\n")
-                            output_file.write(f"Applied rule: {rule[0]} -> {rule[1]}\n")
-                            output_file.write(f"Result: {new_string}\n\n")
+                    if substitutions is not None:
+                        # Update final_result if /…= pattern exists
+                        match = re.search(r'/([1]+)=', new_string)
+                        if match:
+                            final_result = match.group(1)
 
-                            current_string = new_string
-                            rule_applied = True
-                            step += 1
-                            break
-                    except ValueError as e:
-                        print(f"Computation error: {e}")
-                        output_file.write(f"Error: {e}\n")
-                        return
+                        # Write step
+                        output_file.write(f"Step {step + 1}:\n")
+                        output_file.write(f"Original string: {current_string}\n")
+                        output_file.write(f"Applied rule: {rule[0]} -> {rule[1]}\n")
+                        output_file.write(f"Result: {new_string}\n\n")
+
+                        current_string = new_string
+                        rule_applied = True
+                        step += 1
+                        break
 
                 if not rule_applied:
                     output_file.write("Computation completed successfully. No more rules apply.\n")
-                    print("Computation completed successfully.")
                     break
             else:
                 output_file.write("Computation stopped: Maximum step limit reached.\n")
-                print("Warning: Maximum step limit reached")
-
-            # Extract only the last contiguous sequence of 1's as the final result
-            import re
-            match = re.search(r'1+$', current_string)
-            final_result = match.group(0) if match else current_string
 
             output_file.write(f"Final result: {final_result}\n")
 

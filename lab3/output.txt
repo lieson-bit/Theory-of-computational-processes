@@ -21,4 +21,4 @@ Applied rule: /c= -> c
 Result: 111111111
 
 Computation completed successfully. No more rules apply.
-Final result: 111111111
+Final result: 111111
