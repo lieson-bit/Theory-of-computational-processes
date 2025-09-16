@@ -1,29 +1,19 @@
-Initial string: 11*111=/=
+Начальная строка: 1*1=/=
 
-Step 1:
-Original string: 11*111=/=
-Applied rule: a*1b=/c= -> a*b=/ca=
-Result: 11*11=/11=
+Шаг 1:
+Исходная строка: 1*1=/=
+Применено правило: a*1b=/c= -> a*b=/ca=
+Результат: 1*=/1=
 
-Step 2:
-Original string: 11*11=/11=
-Applied rule: a*1b=/c= -> a*b=/ca=
-Result: 11*1=/1111=
+Шаг 2:
+Исходная строка: 1*=/1=
+Применено правило: *=/c= -> /c=
+Результат: 1/1=
 
-Step 3:
-Original string: 11*1=/1111=
-Applied rule: a*1b=/c= -> a*b=/ca=
-Result: 11*=/111111=
+Шаг 3:
+Исходная строка: 1/1=
+Применено правило: /c1= -> c=
+Результат: 1=
 
-Step 4:
-Original string: 11*=/111111=
-Applied rule: *=/c= -> /c=
-Result: 11/111111=
-
-Step 5:
-Original string: 11/111111=
-Applied rule: /c= -> c
-Result: 11111111
-
-Computation completed successfully. No more rules apply.
-Final result: 111111
+Вычисление завершено успешно. Правила больше не применимы.
+Итоговый результат: 1

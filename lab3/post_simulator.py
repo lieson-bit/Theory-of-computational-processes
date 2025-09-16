@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
-# post_simulator.py - Enhanced version with INPUT section support
+# post_simulator.py - Расширенная версия с поддержкой секции INPUT
 
 import sys
 import re
 
 def parse_input_file(filename):
-    """Parse input file with support for INPUT section"""
+    """Разбор входного файла с поддержкой секции INPUT"""
     try:
         with open(filename, 'r', encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
-        raise FileNotFoundError(f"Error: File '{filename}' not found.")
+        raise FileNotFoundError(f"Ошибка: Файл '{filename}' не найден.")
     
-    # Initialize components
+    # Инициализация компонентов
     A = set()
     X = set()
     A1 = set()
     R = []
     INPUT = {}
     
-    # Parse each section using regex
+    # Разбор каждой секции с помощью regex
     sections = {
         'A': r'A\s*=\s*\{([^}]*)\}',
         'X': r'X\s*=\s*\{([^}]*)\}', 
@@ -52,24 +52,24 @@ def parse_input_file(filename):
     return A, X, A1, R, INPUT
 
 def substitute_variables(string, variables):
-    """Substitute variables with their values"""
+    """Подстановка значений вместо переменных"""
     result = string
     for var, value in variables.items():
         result = result.replace(var, value)
     return result
 
 def validate_string(s, A, X):
-    """Validate that all characters in string are in alphabet A"""
+    """Проверка, что все символы строки входят в алфавит"""
     for char in s:
         if char not in A:
-            return False, f"Symbol '{char}' not in alphabet A"
+            return False, f"Символ '{char}' не входит в алфавит A"
     return True, ""
 
 def apply_rule(current_string, rule, A, X):
-    """Try to apply a rule to the current string"""
+    """Попытка применить правило к текущей строке"""
     lhs, rhs = rule
     
-    # Try to match the rule at every position
+    # Попробовать применить правило в каждой позиции строки
     for i in range(len(current_string)):
         substitutions = {}
         lhs_index = 0
@@ -78,12 +78,11 @@ def apply_rule(current_string, rule, A, X):
         
         while lhs_index < len(lhs) and current_index < len(current_string):
             if lhs[lhs_index] in X:
-                # Variable - capture everything until next constant
+                # Переменная – захватить всё до следующей константы
                 var = lhs[lhs_index]
                 start = current_index
                 
-                # Look for the end of this variable (next constant in pattern or end)
-                # Find next constant in lhs after this variable
+                # Найти следующую константу в lhs
                 next_const = None
                 for j in range(lhs_index + 1, len(lhs)):
                     if lhs[j] not in X:
@@ -98,77 +97,75 @@ def apply_rule(current_string, rule, A, X):
                     value = current_string[start:idx]
                     current_index = idx
                 else:
-                    # Variable goes till end
+                    # Переменная до конца строки
                     value = current_string[start:]
                     current_index = len(current_string)
 
-                
-                value = current_string[start:current_index]
                 substitutions[var] = value
                 lhs_index += 1
             else:
-                # Constant - must match exactly
-                if current_string[current_index] != lhs[lhs_index]:
+                # Константа – должна совпадать точно
+                if current_index >= len(current_string) or current_string[current_index] != lhs[lhs_index]:
                     match = False
                     break
                 current_index += 1
                 lhs_index += 1
         
-        # Check if we fully matched the pattern
+        # Проверка на полное совпадение
         if match and lhs_index == len(lhs):
-            # Substitute variables in the right side
+            # Подставить значения переменных в правую часть
             new_part = rhs
             for var, value in substitutions.items():
                 new_part = new_part.replace(var, value)
             
-            # Validate the result
+            # Проверка результата
             valid, error = validate_string(new_part, A, X)
             if not valid:
-                raise ValueError(f"Rule application error: {error}")
+                raise ValueError(f"Ошибка применения правила: {error}")
             
-            # Create the new string
+            # Построить новую строку
             new_string = current_string[:i] + new_part + current_string[current_index:]
             return new_string, substitutions
     
-    return current_string, None  # Return current_string instead of None
+    return current_string, None  # Если правило не применимо
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python post_simulator.py <input_file>")
+        print("Использование: python post_simulator.py <входной_файл>")
         return
 
     try:
-        # Parse input file
+        # Разбор входного файла
         A, X, A1, R, INPUT = parse_input_file(sys.argv[1])
 
-        # --- Validation ---
+        # --- Проверки ---
         if not A1:
-            print("Error: No axioms found")
+            print("Ошибка: не найдены аксиомы")
             return
         axiom_template = next(iter(A1))
 
-        # Validate that axiom only contains symbols from alphabet or variables
+        # Проверка, что аксиома содержит только символы алфавита или переменные
         for ch in axiom_template:
             if ch not in A and ch not in X:
-                print(f"Error: Symbol '{ch}' in axiom not in alphabet A or variables X")
+                print(f"Ошибка: символ '{ch}' в аксиоме не входит в алфавит A или множество переменных X")
                 return
 
-        # Validate INPUT variables are all declared in X
+        # Проверка, что все переменные во входных данных объявлены в X
         for var in INPUT.keys():
             if var not in X:
-                print(f"Error: Variable '{var}' in INPUT not in declared set X")
+                print(f"Ошибка: переменная '{var}' в INPUT не входит в множество X")
                 return
 
-        # Substitute variables if INPUT section exists
+        # Подстановка переменных из INPUT
         current_string = substitute_variables(axiom_template, INPUT) if INPUT else axiom_template
 
         step = 0
         max_steps = 1000
         output_filename = "output.txt"
-        final_result = ""  # Store last seen /…= value
+        final_result = ""  # Последний найденный результат между /…=
 
         with open(output_filename, "w", encoding='utf-8') as output_file:
-            output_file.write(f"Initial string: {current_string}\n\n")
+            output_file.write(f"Начальная строка: {current_string}\n\n")
 
             while step < max_steps:
                 rule_applied = False
@@ -177,22 +174,22 @@ def main():
                     try:
                         new_string, substitutions = apply_rule(current_string, rule, A, X)
                     except ValueError as e:
-                        # Symbol not in alphabet detected in rule application
-                        print(f"Error: {e}")
-                        output_file.write(f"Error: {e}\n")
+                        # Ошибка применения правила
+                        print(f"Ошибка: {e}")
+                        output_file.write(f"Ошибка: {e}\n")
                         return
 
                     if substitutions is not None:
-                        # Update final_result if /…= pattern exists
+                        # Обновить результат, если есть шаблон /…=
                         match = re.search(r'/([1]+)=', new_string)
                         if match:
                             final_result = match.group(1)
 
-                        # Write step
-                        output_file.write(f"Step {step + 1}:\n")
-                        output_file.write(f"Original string: {current_string}\n")
-                        output_file.write(f"Applied rule: {rule[0]} -> {rule[1]}\n")
-                        output_file.write(f"Result: {new_string}\n\n")
+                        # Записать шаг
+                        output_file.write(f"Шаг {step + 1}:\n")
+                        output_file.write(f"Исходная строка: {current_string}\n")
+                        output_file.write(f"Применено правило: {rule[0]} -> {rule[1]}\n")
+                        output_file.write(f"Результат: {new_string}\n\n")
 
                         current_string = new_string
                         rule_applied = True
@@ -200,26 +197,23 @@ def main():
                         break
 
                 if not rule_applied:
-                    output_file.write("Computation completed successfully. No more rules apply.\n")
-                    print("Computation completed successfully.")
+                    output_file.write("Вычисление завершено успешно. Правила больше не применимы.\n")
+                    print("Вычисление завершено успешно.")
                     break
             else:
-                output_file.write("Computation stopped: Maximum step limit reached.\n")
-                print("Warning: Maximum step limit reached")
+                output_file.write("Вычисление остановлено: достигнут максимум шагов.\n")
+                print("Предупреждение: достигнут максимум шагов")
 
-            output_file.write(f"Final result: {final_result}\n")
+            output_file.write(f"Итоговый результат: {final_result}\n")
 
-        print(f"Computation results written to {output_filename}")
-        print(f"Final computed result: {final_result}")
+        print(f"Результаты вычислений записаны в {output_filename}")
+        print(f"Окончательный результат: {final_result}")
 
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        print(f"Неожиданная ошибка: {e}")
         import traceback
         traceback.print_exc()
 
 
-
 if __name__ == '__main__':
     main()
-
-    
