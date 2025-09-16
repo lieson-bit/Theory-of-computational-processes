@@ -141,10 +141,25 @@ def main():
         # Parse input file
         A, X, A1, R, INPUT = parse_input_file(sys.argv[1])
 
+        # --- Validation ---
         if not A1:
             print("Error: No axioms found")
             return
         axiom_template = next(iter(A1))
+
+        # Validate that axiom only contains symbols from alphabet or variables
+        for ch in axiom_template:
+            if ch not in A and ch not in X:
+                print(f"Error: Symbol '{ch}' in axiom not in alphabet A or variables X")
+                return
+
+        # Validate INPUT variables are all declared in X
+        for var in INPUT.keys():
+            if var not in X:
+                print(f"Error: Variable '{var}' in INPUT not in declared set X")
+                return
+
+        # Substitute variables if INPUT section exists
         current_string = substitute_variables(axiom_template, INPUT) if INPUT else axiom_template
 
         step = 0
@@ -159,7 +174,13 @@ def main():
                 rule_applied = False
 
                 for rule in R:
-                    new_string, substitutions = apply_rule(current_string, rule, A, X)
+                    try:
+                        new_string, substitutions = apply_rule(current_string, rule, A, X)
+                    except ValueError as e:
+                        # Symbol not in alphabet detected in rule application
+                        print(f"Error: {e}")
+                        output_file.write(f"Error: {e}\n")
+                        return
 
                     if substitutions is not None:
                         # Update final_result if /…= pattern exists
@@ -180,9 +201,11 @@ def main():
 
                 if not rule_applied:
                     output_file.write("Computation completed successfully. No more rules apply.\n")
+                    print("Computation completed successfully.")
                     break
             else:
                 output_file.write("Computation stopped: Maximum step limit reached.\n")
+                print("Warning: Maximum step limit reached")
 
             output_file.write(f"Final result: {final_result}\n")
 
@@ -190,9 +213,10 @@ def main():
         print(f"Final computed result: {final_result}")
 
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Unexpected error: {e}")
         import traceback
         traceback.print_exc()
+
 
 
 if __name__ == '__main__':

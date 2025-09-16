@@ -1,24 +1,29 @@
-Initial string: 111*11=/=
+Initial string: 11*111=/=
 
 Step 1:
-Original string: 111*11=/=
+Original string: 11*111=/=
 Applied rule: a*1b=/c= -> a*b=/ca=
-Result: 111*1=/111=
+Result: 11*11=/11=
 
 Step 2:
-Original string: 111*1=/111=
+Original string: 11*11=/11=
 Applied rule: a*1b=/c= -> a*b=/ca=
-Result: 111*=/111111=
+Result: 11*1=/1111=
 
 Step 3:
-Original string: 111*=/111111=
-Applied rule: *=/c= -> /c=
-Result: 111/111111=
+Original string: 11*1=/1111=
+Applied rule: a*1b=/c= -> a*b=/ca=
+Result: 11*=/111111=
 
 Step 4:
-Original string: 111/111111=
+Original string: 11*=/111111=
+Applied rule: *=/c= -> /c=
+Result: 11/111111=
+
+Step 5:
+Original string: 11/111111=
 Applied rule: /c= -> c
-Result: 111111111
+Result: 11111111
 
 Computation completed successfully. No more rules apply.
 Final result: 111111
