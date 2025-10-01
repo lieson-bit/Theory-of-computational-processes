@@ -1,0 +1,14 @@
+Автоматная матрица для n=2, m=3, k=1
+Состояние | x | d | a | b
+--------------------------------------------------------------------------------
+Qstart | ReadingX_0_1/0 | ReadingD_0_1/0 | Qtrap/0 | Qtrap/0
+ReadingX_0_1 | ReadingX_0_2/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
+ReadingX_0_2 | Qtrap/0 | Qtrap/0 | SuffixA/0 | Qtrap/0
+ReadingD_0_1 | Qtrap/0 | ReadingD_0_2/0 | Qtrap/0 | Qtrap/0
+ReadingD_0_2 | Qtrap/0 | ReadingD_0_3/0 | Qtrap/0 | Qtrap/0
+ReadingD_0_3 | Qtrap/0 | Qtrap/0 | SuffixA/0 | Qtrap/0
+SuffixA | -/- | -/- | SuffixX/0 | -/-
+SuffixX | SuffixB/0 | -/- | -/- | -/-
+SuffixB | -/- | -/- | -/- | Qfinal/1
+Qfinal | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
+Qtrap | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
