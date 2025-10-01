@@ -1,5 +1,5 @@
-Автоматная матрица для n=2, m=3, k=2
-Паттерн: 2 групп по (2 'x' ИЛИ 3 'd') затем 'a x b'
+Автоматная матрица для n=2, m=3, k=3
+Паттерн: 3 групп по (2 'x' ИЛИ 3 'd') затем 'a x b'
 Состояние | x | d | a | b
 --------------------------------------------------------------------------------
 Qstart | ReadingX_0_1/0 | ReadingD_0_1/0 | Qtrap/0 | Qtrap/0
@@ -9,31 +9,37 @@ ReadingD_0_1 | Qtrap/0 | ReadingD_0_2/0 | Qtrap/0 | Qtrap/0
 ReadingD_0_2 | Qtrap/0 | ReadingD_0_3/0 | Qtrap/0 | Qtrap/0
 ReadingD_0_3 | ReadingX_1_1/0 | ReadingD_1_1/0 | Qtrap/0 | Qtrap/0
 ReadingX_1_1 | ReadingX_1_2/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
-ReadingX_1_2 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
+ReadingX_1_2 | ReadingX_2_1/0 | ReadingD_2_1/0 | Qtrap/0 | Qtrap/0
 ReadingD_1_1 | Qtrap/0 | ReadingD_1_2/0 | Qtrap/0 | Qtrap/0
 ReadingD_1_2 | Qtrap/0 | ReadingD_1_3/0 | Qtrap/0 | Qtrap/0
-ReadingD_1_3 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
+ReadingD_1_3 | ReadingX_2_1/0 | ReadingD_2_1/0 | Qtrap/0 | Qtrap/0
+ReadingX_2_1 | ReadingX_2_2/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
+ReadingX_2_2 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
+ReadingD_2_1 | Qtrap/0 | ReadingD_2_2/0 | Qtrap/0 | Qtrap/0
+ReadingD_2_2 | Qtrap/0 | ReadingD_2_3/0 | Qtrap/0 | Qtrap/0
+ReadingD_2_3 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
 SuffixX | SuffixB/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 SuffixB | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qfinal/1
 Qfinal | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 Qtrap | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 
-Проверка слова: 'ddxxddaxb'
-Путь состояний: Qstart -> ReadingD_0_1 -> ReadingD_0_2 -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap
+Проверка слова: 'xxxxdddaxb'
+Путь состояний: Qstart -> ReadingX_0_1 -> ReadingX_0_2 -> ReadingX_1_1 -> ReadingX_1_2 -> ReadingD_2_1 -> ReadingD_2_2 -> ReadingD_2_3 -> SuffixX -> SuffixB -> Qfinal
 Переходы:
-  Шаг 1: Qstart --d--> ReadingD_0_1
-  Шаг 2: ReadingD_0_1 --d--> ReadingD_0_2
-  Шаг 3: ReadingD_0_2 --x--> Qtrap
-  Шаг 4: Qtrap --x--> Qtrap
-  Шаг 5: Qtrap --d--> Qtrap
-  Шаг 6: Qtrap --d--> Qtrap
-  Шаг 7: Qtrap --a--> Qtrap
-  Шаг 8: Qtrap --x--> Qtrap
-  Шаг 9: Qtrap --b--> Qtrap
-Выходная последовательность: 000000000
-Результат: Слово ОТВЕРГНУТО
+  Шаг 1: Qstart --x--> ReadingX_0_1
+  Шаг 2: ReadingX_0_1 --x--> ReadingX_0_2
+  Шаг 3: ReadingX_0_2 --x--> ReadingX_1_1
+  Шаг 4: ReadingX_1_1 --x--> ReadingX_1_2
+  Шаг 5: ReadingX_1_2 --d--> ReadingD_2_1
+  Шаг 6: ReadingD_2_1 --d--> ReadingD_2_2
+  Шаг 7: ReadingD_2_2 --d--> ReadingD_2_3
+  Шаг 8: ReadingD_2_3 --a--> SuffixX
+  Шаг 9: SuffixX --x--> SuffixB
+  Шаг 10: SuffixB --b--> Qfinal
+Выходная последовательность: 0000000001
+Результат: Слово ПРИНЯТО
 
-Примеры допустимых слов для n=2, m=3, k=2:
+Примеры допустимых слов для n=2, m=3, k=3:
   - xxdddaxb
   - dddxxaxb
   - xxxxaxb

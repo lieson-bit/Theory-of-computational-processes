@@ -5,7 +5,7 @@ class MealyMachineGenerator:
         self.n = n
         self.m = m 
         self.k = k
-        self.states = ["Qstart", "SuffixX", "SuffixB", "Qfinal", "Qtrap"]  # REMOVED SuffixA
+        self.states = ["Qstart", "SuffixX", "SuffixB", "Qfinal", "Qtrap"]  # УДАЛЕН SuffixA
         self.transitions = {}
         
     def generate_automaton(self):
@@ -14,26 +14,26 @@ class MealyMachineGenerator:
         return self.transitions
     
     def _generate_all_states(self):
-        # Generate states for all k groups
+        # Генерация состояний для всех k групп
         for group in range(self.k):
-            # X-group states: ReadingX_group_i (i from 1 to n)
+            # Состояния X-группы: ReadingX_группа_i (i от 1 до n)
             for i in range(1, self.n + 1):
                 state_name = f"ReadingX_{group}_{i}"
                 self.states.append(state_name)
                 
-            # D-group states: ReadingD_group_j (j from 1 to m)  
+            # Состояния D-группы: ReadingD_группа_j (j от 1 до m)  
             for j in range(1, self.m + 1):
                 state_name = f"ReadingD_{group}_{j}"
                 self.states.append(state_name)
     
     def _generate_all_transitions(self):
-        # Initialize all states with trap transitions
+        # Инициализация всех состояний переходами в ловушку
         for state in self.states:
             self.transitions[state] = {}
             for symbol in ['x', 'd', 'a', 'b']:
                 self.transitions[state][symbol] = ("Qtrap", "0")
         
-        # Start state transitions
+        # Переходы из начального состояния
         self.transitions["Qstart"] = {
             'x': ("ReadingX_0_1", "0"),
             'd': ("ReadingD_0_1", "0"),
@@ -41,24 +41,24 @@ class MealyMachineGenerator:
             'b': ("Qtrap", "0")
         }
         
-        # Generate transitions for all groups
+        # Генерация переходов для всех групп
         for group in range(self.k):
             self._add_x_group_transitions(group)
             self._add_d_group_transitions(group)
             
-        # CORRECTED Suffix transitions - FIXED!
-        # After completing the LAST group, we read 'a' and go directly to SuffixX
-        # Then SuffixX --x--> SuffixB (expect 'x') 
-        # Then SuffixB --b--> Qfinal (expect 'b', output 1)
+        # ИСПРАВЛЕННЫЕ переходы суффикса - ФИКС!
+        # После завершения ПОСЛЕДНЕЙ группы, мы читаем 'a' и переходим прямо в SuffixX
+        # Затем SuffixX --x--> SuffixB (ожидаем 'x') 
+        # Затем SuffixB --b--> Qfinal (ожидаем 'b', выход 1)
         
         self.transitions["SuffixX"] = {
-            'x': ("SuffixB", "0"),  # After 'a', expect 'x'
+            'x': ("SuffixB", "0"),  # После 'a', ожидаем 'x'
             'a': ("Qtrap", "0"),
             'd': ("Qtrap", "0"), 
             'b': ("Qtrap", "0")
         }
         self.transitions["SuffixB"] = {
-            'b': ("Qfinal", "1"),   # After 'x', expect 'b' to finish
+            'b': ("Qfinal", "1"),   # После 'x', ожидаем 'b' для завершения
             'x': ("Qtrap", "0"),
             'a': ("Qtrap", "0"),
             'd': ("Qtrap", "0")
@@ -69,17 +69,17 @@ class MealyMachineGenerator:
             state_name = f"ReadingX_{group}_{i}"
             
             if i < self.n:
-                # Continue in same x-group - read another 'x'
+                # Продолжаем в той же x-группе - читаем следующий 'x'
                 self.transitions[state_name]['x'] = (f"ReadingX_{group}_{i+1}", "0")
             else:
-                # Completed x-group (got n x's)
+                # Завершили x-группу (получили n 'x')
                 if group < self.k - 1:
-                    # More groups needed - can start either x-group or d-group
+                    # Нужно больше групп - можем начать либо x-группу, либо d-группу
                     self.transitions[state_name]['x'] = (f"ReadingX_{group+1}_1", "0")
                     self.transitions[state_name]['d'] = (f"ReadingD_{group+1}_1", "0")
                 else:
-                    # Last group completed - now expect 'a' to start suffix
-                    # After reading 'a', go directly to SuffixX (expecting 'x')
+                    # Завершили последнюю группу - теперь ожидаем 'a' для начала суффикса
+                    # После чтения 'a', переходим прямо в SuffixX (ожидая 'x')
                     self.transitions[state_name]['a'] = ("SuffixX", "0")
         
     def _add_d_group_transitions(self, group):
@@ -87,116 +87,116 @@ class MealyMachineGenerator:
             state_name = f"ReadingD_{group}_{j}"
             
             if j < self.m:
-                # Continue in same d-group - read another 'd'
+                # Продолжаем в той же d-группе - читаем следующий 'd'
                 self.transitions[state_name]['d'] = (f"ReadingD_{group}_{j+1}", "0")
             else:
-                # Completed d-group (got m d's)
+                # Завершили d-группу (получили m 'd')
                 if group < self.k - 1:
-                    # More groups needed - can start either x-group or d-group
+                    # Нужно больше групп - можем начать либо x-группу, либо d-группу
                     self.transitions[state_name]['x'] = (f"ReadingX_{group+1}_1", "0")
                     self.transitions[state_name]['d'] = (f"ReadingD_{group+1}_1", "0")
                 else:
-                    # Last group completed - now expect 'a' to start suffix
-                    # After reading 'a', go directly to SuffixX (expecting 'x')
+                    # Завершили последнюю группу - теперь ожидаем 'a' для начала суффикса
+                    # После чтения 'a', переходим прямо в SuffixX (ожидая 'x')
                     self.transitions[state_name]['a'] = ("SuffixX", "0")
 
 def validate_word(word, automaton_matrix):
-    """Validate if a word is accepted by the automaton"""
+    """Проверяет, принимается ли слово автоматом"""
     current_state = "Qstart"
     output_sequence = []
     path = [current_state]
     transition_log = []
     
-    print(f"\nValidating word: '{word}'")
-    print(f"Expected pattern: k groups of (n x's OR m d's) followed by 'a x b'")
+    print(f"\nПроверка слова: '{word}'")
+    print(f"Ожидаемый паттерн: k групп из (n 'x' ИЛИ m 'd') затем 'a x b'")
     
     for i, char in enumerate(word):
         if char not in ['x', 'd', 'a', 'b']:
-            print(f"Error: Invalid character '{char}' at position {i}")
+            print(f"Ошибка: Неверный символ '{char}' на позиции {i}")
             return False, output_sequence, path, transition_log
             
         if current_state not in automaton_matrix:
-            print(f"Error: Unknown state '{current_state}'")
+            print(f"Ошибка: Неизвестное состояние '{current_state}'")
             return False, output_sequence, path, transition_log
             
         if char not in automaton_matrix[current_state]:
-            print(f"Error: No transition for '{char}' from state '{current_state}'")
-            print(f"Available transitions from {current_state}: {list(automaton_matrix[current_state].keys())}")
+            print(f"Ошибка: Нет перехода для '{char}' из состояния '{current_state}'")
+            print(f"Доступные переходы из {current_state}: {list(automaton_matrix[current_state].keys())}")
             return False, output_sequence, path, transition_log
             
         next_state, output = automaton_matrix[current_state][char]
         transition_info = f"{current_state} --{char}--> {next_state}"
-        print(f"Step {i+1}: {transition_info} (output: {output})")
+        print(f"Шаг {i+1}: {transition_info} (выход: {output})")
         
         transition_log.append(transition_info)
         output_sequence.append(output)
         current_state = next_state
         path.append(current_state)
     
-    # Check if we ended in final state
+    # Проверяем, закончили ли мы в конечном состоянии
     is_accepted = (current_state == "Qfinal")
-    print(f"Final state: {current_state}, Accepted: {is_accepted}")
+    print(f"Финальное состояние: {current_state}, Принято: {is_accepted}")
     
     return is_accepted, output_sequence, path, transition_log
 
 def main():
-    # Get the current directory
+    # Получаем текущую директорию
     current_dir = os.path.dirname(os.path.abspath(__file__))
     input_file_path = os.path.join(current_dir, 'input.txt')
     
-    print(f"Looking for input file at: {input_file_path}")
+    print(f"Поиск входного файла по пути: {input_file_path}")
     
-    # Check if file exists
+    # Проверяем существование файла
     if not os.path.exists(input_file_path):
-        print("Input file not found. Creating a default input.txt file...")
+        print("Входной файл не найден. Создание файла input.txt по умолчанию...")
         
-        # Create a default input file
+        # Создаем файл по умолчанию
         with open(input_file_path, 'w', encoding='utf-8') as f:
             f.write("n=2 m=3 k=2\n")
             f.write("xxdddaxb\n")
         
-        print("Default input.txt created with n=2, m=3, k=2 and test word 'xxdddaxb'")
+        print("Создан файл input.txt по умолчанию с n=2, m=3, k=2 и тестовым словом 'xxdddaxb'")
     
-    # Read parameters from file
+    # Читаем параметры из файла
     test_word = None
     try:
         with open(input_file_path, 'r', encoding='utf-8') as f:
             lines = [line.strip() for line in f.readlines() if line.strip()]
             
             if not lines:
-                print("Input file is empty. Using default values.")
+                print("Входной файл пуст. Используются значения по умолчанию.")
                 n, m, k = 2, 3, 1
             else:
-                # First line should contain parameters
+                # Первая строка должна содержать параметры
                 params_line = lines[0]
                 params = dict(item.split('=') for item in params_line.split())
                 n = int(params['n'])
                 m = int(params['m']) 
                 k = int(params['k'])
                 
-                # Second line (if exists) should contain test word
+                # Вторая строка (если существует) должна содержать тестовое слово
                 if len(lines) > 1:
-                    test_word = lines[1].replace(" ", "")  # Remove spaces from test word
+                    test_word = lines[1].replace(" ", "")  # Удаляем пробелы из тестового слова
                     
-        print(f"Successfully read parameters: n={n}, m={m}, k={k}")
-        print(f"Pattern: {k} groups of ({n} x's OR {m} d's) followed by 'a x b'")
+        print(f"Успешно прочитаны параметры: n={n}, m={m}, k={k}")
+        print(f"Паттерн: {k} групп из ({n} 'x' ИЛИ {m} 'd') затем 'a x b'")
         if test_word:
-            print(f"Test word: '{test_word}'")
-            print(f"Expected: {k} groups + 'a x b' = total length: {k * max(n, m) + 3}")
-            print(f"Actual length: {len(test_word)}")
+            print(f"Тестовое слово: '{test_word}'")
+            print(f"Ожидаемая длина: {k} групп + 'a x b' = общая длина: {k * max(n, m) + 3}")
+            print(f"Фактическая длина: {len(test_word)}")
         else:
-            print("No test word provided in input.txt")
+            print("Тестовое слово не предоставлено в input.txt")
             
     except Exception as e:
-        print(f"Error reading input file: {e}")
-        print("Using default values: n=2, m=3, k=1")
+        print(f"Ошибка чтения входного файла: {e}")
+        print("Используются значения по умолчанию: n=2, m=3, k=1")
         n, m, k = 2, 3, 1
     
-    # Generate automaton
+    # Генерируем автомат
     generator = MealyMachineGenerator(n, m, k)
     automaton_matrix = generator.generate_automaton()
     
-    # Write output to file
+    # Записываем выходные данные в файл
     output_file_path = os.path.join(current_dir, 'output.txt')
     with open(output_file_path, 'w', encoding='utf-8') as f:
         f.write(f"Автоматная матрица для n={n}, m={m}, k={k}\n")
@@ -204,10 +204,10 @@ def main():
         f.write("Состояние | x | d | a | b\n")
         f.write("-" * 80 + "\n")
         
-        # Get all states in order for consistent output
+        # Получаем все состояния в порядке для согласованного вывода
         all_states = ["Qstart"] 
         
-        # Add group states in order
+        # Добавляем состояния групп в порядке
         for group in range(k):
             for i in range(1, n + 1):
                 state_name = f"ReadingX_{group}_{i}"
@@ -218,7 +218,7 @@ def main():
                 if state_name in generator.states:
                     all_states.append(state_name)
         
-        # Add suffix states
+        # Добавляем состояния суффикса
         all_states.extend(["SuffixX", "SuffixB", "Qfinal", "Qtrap"])
         
         for state in all_states:
@@ -232,7 +232,7 @@ def main():
                         row.append("-/-")
                 f.write(" | ".join(row) + "\n")
         
-        # Test the word if provided
+        # Тестируем слово, если предоставлено
         if test_word:
             f.write(f"\nПроверка слова: '{test_word}'\n")
             is_valid, output_sequence, path, transition_log = validate_word(test_word, automaton_matrix)
@@ -244,14 +244,14 @@ def main():
             f.write(f"Выходная последовательность: {''.join(output_sequence)}\n")
             f.write(f"Результат: Слово {'ПРИНЯТО' if is_valid else 'ОТВЕРГНУТО'}\n")
             
-            # Show examples of valid words
+            # Показываем примеры допустимых слов
             f.write(f"\nПримеры допустимых слов для n={n}, m={m}, k={k}:\n")
             examples = []
             if k == 1:
                 examples.append(f"{'x'*n}axb")
                 examples.append(f"{'d'*m}axb")
             else:
-                # Generate some example combinations
+                # Генерируем некоторые примеры комбинаций
                 examples.append(f"{'x'*n}{'d'*m}axb")
                 examples.append(f"{'d'*m}{'x'*n}axb")
                 examples.append(f"{'x'*n}{'x'*n}axb")
@@ -260,7 +260,7 @@ def main():
             for example in examples:
                 f.write(f"  - {example}\n")
     
-    print(f"\nOutput written to: {output_file_path}")
+    print(f"\nВыходные данные записаны в: {output_file_path}")
 
 if __name__ == "__main__":
     main()

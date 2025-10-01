@@ -1,2 +1,2 @@
-n=2 m=3 k=2
-xxdddaxb
+n=2 m=3 k=3
+xxxxdddaxb
