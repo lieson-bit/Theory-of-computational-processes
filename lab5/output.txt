@@ -9,14 +9,32 @@ ReadingD_0_1 | Qtrap/0 | ReadingD_0_2/0 | Qtrap/0 | Qtrap/0
 ReadingD_0_2 | Qtrap/0 | ReadingD_0_3/0 | Qtrap/0 | Qtrap/0
 ReadingD_0_3 | ReadingX_1_1/0 | ReadingD_1_1/0 | Qtrap/0 | Qtrap/0
 ReadingX_1_1 | ReadingX_1_2/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
-ReadingX_1_2 | Qtrap/0 | Qtrap/0 | SuffixA/0 | Qtrap/0
+ReadingX_1_2 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
 ReadingD_1_1 | Qtrap/0 | ReadingD_1_2/0 | Qtrap/0 | Qtrap/0
 ReadingD_1_2 | Qtrap/0 | ReadingD_1_3/0 | Qtrap/0 | Qtrap/0
-ReadingD_1_3 | Qtrap/0 | Qtrap/0 | SuffixA/0 | Qtrap/0
-SuffixA | SuffixX/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
-SuffixX | Qtrap/0 | Qtrap/0 | Qtrap/0 | SuffixB/0
+ReadingD_1_3 | Qtrap/0 | Qtrap/0 | SuffixX/0 | Qtrap/0
+SuffixX | SuffixB/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 SuffixB | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qfinal/1
 Qfinal | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 Qtrap | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
 
-Проверка слова: 'xxxxaxb'
+Проверка слова: 'ddxxddaxb'
+Путь состояний: Qstart -> ReadingD_0_1 -> ReadingD_0_2 -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap -> Qtrap
+Переходы:
+  Шаг 1: Qstart --d--> ReadingD_0_1
+  Шаг 2: ReadingD_0_1 --d--> ReadingD_0_2
+  Шаг 3: ReadingD_0_2 --x--> Qtrap
+  Шаг 4: Qtrap --x--> Qtrap
+  Шаг 5: Qtrap --d--> Qtrap
+  Шаг 6: Qtrap --d--> Qtrap
+  Шаг 7: Qtrap --a--> Qtrap
+  Шаг 8: Qtrap --x--> Qtrap
+  Шаг 9: Qtrap --b--> Qtrap
+Выходная последовательность: 000000000
+Результат: Слово ОТВЕРГНУТО
+
+Примеры допустимых слов для n=2, m=3, k=2:
+  - xxdddaxb
+  - dddxxaxb
+  - xxxxaxb
+  - ddddddaxb

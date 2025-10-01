@@ -5,7 +5,7 @@ class MealyMachineGenerator:
         self.n = n
         self.m = m 
         self.k = k
-        self.states = ["Qstart", "SuffixA", "SuffixX", "SuffixB", "Qfinal", "Qtrap"]
+        self.states = ["Qstart", "SuffixX", "SuffixB", "Qfinal", "Qtrap"]  # REMOVED SuffixA
         self.transitions = {}
         
     def generate_automaton(self):
@@ -47,17 +47,10 @@ class MealyMachineGenerator:
             self._add_d_group_transitions(group)
             
         # CORRECTED Suffix transitions - FIXED!
-        # After completing groups, we go to SuffixA and expect 'a'
-        # Then SuffixA --a--> SuffixX (expect 'x')
-        # Then SuffixX --x--> SuffixB (expect 'b') 
-        # Then SuffixB --b--> Qfinal (output 1)
+        # After completing the LAST group, we read 'a' and go directly to SuffixX
+        # Then SuffixX --x--> SuffixB (expect 'x') 
+        # Then SuffixB --b--> Qfinal (expect 'b', output 1)
         
-        self.transitions["SuffixA"] = {
-            'a': ("SuffixX", "0"),  # After groups, expect 'a' to start suffix
-            'x': ("Qtrap", "0"),
-            'd': ("Qtrap", "0"),
-            'b': ("Qtrap", "0")
-        }
         self.transitions["SuffixX"] = {
             'x': ("SuffixB", "0"),  # After 'a', expect 'x'
             'a': ("Qtrap", "0"),
@@ -86,7 +79,8 @@ class MealyMachineGenerator:
                     self.transitions[state_name]['d'] = (f"ReadingD_{group+1}_1", "0")
                 else:
                     # Last group completed - now expect 'a' to start suffix
-                    self.transitions[state_name]['a'] = ("SuffixA", "0")
+                    # After reading 'a', go directly to SuffixX (expecting 'x')
+                    self.transitions[state_name]['a'] = ("SuffixX", "0")
         
     def _add_d_group_transitions(self, group):
         for j in range(1, self.m + 1):
@@ -103,7 +97,8 @@ class MealyMachineGenerator:
                     self.transitions[state_name]['d'] = (f"ReadingD_{group+1}_1", "0")
                 else:
                     # Last group completed - now expect 'a' to start suffix
-                    self.transitions[state_name]['a'] = ("SuffixA", "0")
+                    # After reading 'a', go directly to SuffixX (expecting 'x')
+                    self.transitions[state_name]['a'] = ("SuffixX", "0")
 
 def validate_word(word, automaton_matrix):
     """Validate if a word is accepted by the automaton"""
@@ -224,7 +219,7 @@ def main():
                     all_states.append(state_name)
         
         # Add suffix states
-        all_states.extend(["SuffixA", "SuffixX", "SuffixB", "Qfinal", "Qtrap"])
+        all_states.extend(["SuffixX", "SuffixB", "Qfinal", "Qtrap"])
         
         for state in all_states:
             if state in automaton_matrix:
