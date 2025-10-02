@@ -38,9 +38,3 @@ Qtrap | Qtrap/0 | Qtrap/0 | Qtrap/0 | Qtrap/0
   Шаг 10: SuffixB --b--> Qfinal
 Выходная последовательность: 0000000001
 Результат: Слово ПРИНЯТО
-
-Примеры допустимых слов для n=2, m=3, k=3:
-  - xxdddaxb
-  - dddxxaxb
-  - xxxxaxb
-  - ddddddaxb
